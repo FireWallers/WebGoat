@@ -9,123 +9,115 @@ using System.Security.Claims;
 using WebGoatCore.Models;
 using WebGoat.Test.Factories;
 
-namespace WebGoat.Test;
-
-public class BlogTest
+namespace WebGoat.Test
 {
-    private DbContextOptions<NorthwindContext> CreateInMemoryOptions()
+    [Trait("Category", "BlogTests")]
+    public class BlogTest
     {
-        return new DbContextOptionsBuilder<NorthwindContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Ensures a unique database for each test
-            .Options;
-    }
+        [Fact]
+        public void Test_that_can_create_blog()
+        {
+            // Arrange
+            NorthwindContext context = TestContext.CreateContext();
+            var service = new BlogEntryRepository(context); // Assuming BlogService contains the CreateBlogEntry method
 
-    private NorthwindContext CreateContext(){
-        var options = CreateInMemoryOptions();
-        return new NorthwindContext(options);
-    }
+            string title = "Test Title";
+            string contents = "This is a test content.";
+            string username = "testuser";
 
-    [Fact]
-    public void Test_that_can_create_blog()
-    {
-        // Arrange
-        NorthwindContext context = CreateContext();
-        var service = new BlogEntryRepository(context); // Assuming BlogService contains the CreateBlogEntry method
+            // Act
+            var result = service.CreateBlogEntry(title, contents, username);
 
-        string title = "Test Title";
-        string contents = "This is a test content.";
-        string username = "testuser";
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(title, result.Title);
+            Assert.Equal(contents, result.Contents);
+            Assert.Equal(username, result.Author);
+            Assert.NotEqual(default, result.PostedDate);
 
-        // Act
-        var result = service.CreateBlogEntry(title, contents, username);
+            // Verify it exists in the database
+            var entryInDb = context.BlogEntries.FirstOrDefault(e => e.Id == result.Id);
+            Assert.NotNull(entryInDb);
+            Assert.Equal(result.Id, entryInDb.Id);
+        }
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(title, result.Title);
-        Assert.Equal(contents, result.Contents);
-        Assert.Equal(username, result.Author);
-        Assert.NotEqual(default, result.PostedDate);
+        [Fact]
+        public void Test_that_can_reply_to_blog()
+        {
+            // Arrange
+            NorthwindContext context = TestContext.CreateContext();
+            var service = new BlogResponseRepository(context); // Assuming BlogService contains the CreateBlogEntry method
 
-        // Verify it exists in the database
-        var entryInDb = context.BlogEntries.FirstOrDefault(e => e.Id == result.Id);
-        Assert.NotNull(entryInDb);
-        Assert.Equal(result.Id, entryInDb.Id);
-    }
+            string author = "Test Author";
+            string contents = "This is a test content.";
+            int entryId = 21;
+            DateTime now = DateTime.Now;
+            BlogResponse response = BlogResponseFactory.Create(author, contents, entryId, now);
+            // Act
+            service.CreateBlogResponse(response);
 
-    [Fact]
-    public void Test_that_can_reply_to_blog()
-    {
-        // Arrange
-        NorthwindContext context = CreateContext();
-        var service = new BlogResponseRepository(context); // Assuming BlogService contains the CreateBlogEntry method
+            // Assert
+            // Verify it exists in the database
+            var entryInDb = context.BlogResponses
+                .FirstOrDefault(e => e.BlogEntryId == entryId);
+            Assert.NotNull(entryInDb);
+            Assert.Equal(contents, entryInDb.Contents);
+            Assert.Equal(author, entryInDb.Author);
+            Assert.Equal(entryId, entryInDb.BlogEntryId);
+        }
 
-        string author = "Test Author";
-        string contents = "This is a test content.";
-        int entryId = 21;
-        DateTime now = DateTime.Now;
-        BlogResponse response = BlogResponseFactory.Create(author, contents, entryId, now);
-        // Act
-        service.CreateBlogResponse(response);
+        //SECURITY TEST START FROM HERE!!!
 
-        // Assert
-        // Verify it exists in the database
-        var entryInDb = context.BlogResponses
-            .FirstOrDefault(e => e.BlogEntryId == entryId);
-        Assert.NotNull(entryInDb);
-        Assert.Equal(contents, entryInDb.Contents);
-        Assert.Equal(author, entryInDb.Author);
-        Assert.Equal(entryId, entryInDb.BlogEntryId);
-    }
+        [Fact]
+        public void Test_that_can_not_insert_code_into_blog()
+        {
+            // Arrange
+            NorthwindContext context = TestContext.CreateContext();
+            var service = new BlogEntryRepository(context);
 
-    [Fact]
-    public void Test_that_can_not_insert_code_into_blog()
-    {
-        // Arrange
-        NorthwindContext context = CreateContext();
-        var service = new BlogEntryRepository(context);
-
-        string maliciousContent = "<script>alert('XSS')</script>";
-        // string sanitizedContent = "alert('XSS')"; // Adjust based on your sanitization logic
-        string author = "Test Author";
-        string title = "A Title";
-        int entryId = 21;
-        DateTime now = DateTime.Now;
+            string maliciousContent = "<script>alert('XSS')</script>";
+            // string sanitizedContent = "alert('XSS')"; // Adjust based on your sanitization logic
+            string author = "Test Author";
+            string title = "A Title";
+            DateTime now = DateTime.Now;
 
 
-        // Act
-        var result = service.CreateBlogEntry(title, maliciousContent, author);
+            // Act
+            var result = service.CreateBlogEntry(title, maliciousContent, author);
 
-        // Assert
-        var entryInDb = context.BlogEntries
-            .FirstOrDefault(e => e.Id == result.Id);
-        Assert.NotNull(entryInDb);
-        Assert.NotEqual(maliciousContent, entryInDb.Contents); // Ensure raw malicious content is not saved
-        // Assert.Equal(sanitizedContent, entryInDb.Contents);   // Ensure content is sanitized correctly
-    }
+            // Assert
+            var entryInDb = context.BlogEntries
+                .FirstOrDefault(e => e.Id == result.Id);
+            Assert.NotNull(entryInDb);
+            Assert.NotEqual(maliciousContent, entryInDb.Contents); // Ensure raw malicious content is not saved
+            // Assert.Equal(sanitizedContent, entryInDb.Contents);   // Ensure content is sanitized correctly
+        }
 
-    [Fact]
-    public void Test_that_can_not_insert_code_into_reply()
-    {
-        // Arrange
-        NorthwindContext context = CreateContext();
-        var service = new BlogResponseRepository(context);
+        [Fact]
+        public void Test_that_can_not_insert_code_into_reply()
+        {
+            // Arrange
+            NorthwindContext context = TestContext.CreateContext();
+            var service = new BlogResponseRepository(context);
 
-        string maliciousContent = "<script>alert('XSS')</script>";
-        // string sanitizedContent = "alert('XSS')"; // Adjust based on your sanitization logic
-        string author = "Test Author";
-        int entryId = 21;
-        DateTime now = DateTime.Now;
+            string maliciousContent = "<script>alert('XSS')</script>";
+            // string sanitizedContent = "alert('XSS')"; // Adjust based on your sanitization logic
+            string author = "Test Author";
+            int entryId = 21;
+            DateTime now = DateTime.Now;
 
-        BlogResponse response = BlogResponseFactory.Create(author, maliciousContent, entryId, now);
+            BlogResponse response = BlogResponseFactory.Create(author, maliciousContent, entryId, now);
 
-        // Act
-        service.CreateBlogResponse(response);
+            // Act
+            service.CreateBlogResponse(response);
 
-        // Assert
-        var entryInDb = context.BlogResponses
-            .FirstOrDefault(e => e.BlogEntryId == entryId);
-        Assert.NotNull(entryInDb);
-        Assert.NotEqual(maliciousContent, entryInDb.Contents); // Ensure raw malicious content is not saved
-        // Assert.Equal(sanitizedContent, entryInDb.Contents);   // Ensure content is sanitized correctly
+            // Assert
+            var entryInDb = context.BlogResponses
+                .FirstOrDefault(e => e.BlogEntryId == entryId);
+            Assert.NotNull(entryInDb);
+            Assert.NotEqual(maliciousContent, entryInDb.Contents); // Ensure raw malicious content is not saved
+            // Assert.Equal(sanitizedContent, entryInDb.Contents);   // Ensure content is sanitized correctly
+        }
+        //End Security Test
     }
 }
