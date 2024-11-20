@@ -14,6 +14,8 @@ using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using WebGoatCore.Controllers;
 using WebGoatCore.Exceptions;
+using WebGoat.NET.Seeders;
+using Microsoft.Extensions.Logging;
 
 namespace WebGoatCore
 {
@@ -122,9 +124,10 @@ namespace WebGoatCore
             services.AddScoped<SupplierRepository>();
             services.AddScoped<OrderRepository>();
             services.AddScoped<CategoryRepository>();
+            services.AddTransient<AdminSeeder>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
@@ -152,6 +155,18 @@ namespace WebGoatCore
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}");
             });
+
+            // Seed Admin User
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+                var adminSeeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
+                adminSeeder.SeedAsync().Wait();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred while seeding the admin user.");
+            }
         }
         
         public int startupNotUsed(int a, int b) // Function added to generate same FA Violation
