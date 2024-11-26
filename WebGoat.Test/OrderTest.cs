@@ -70,14 +70,13 @@ namespace WebGoat.Test
             };
 
             // Act
-            // var newOrderId = _orderRepository.CreateOrder(newOrder); //Ignore for now Activate test when it is fixed
+            var newOrderId = _orderRepository.CreateOrder(newOrder); //Ignore for now Activate test when it is fixed
 
             // Assert
-            // var createdOrder = _context.Orders.Find(newOrderId);
-            // Assert.NotNull(createdOrder);
-            // Assert.Equal("C001", createdOrder.CustomerId);
-            // Assert.Equal(newOrderId, createdOrder.OrderId);
-            Assert.True(true);
+            var createdOrder = _context.Orders.Find(newOrderId);
+            Assert.NotNull(createdOrder);
+            Assert.Equal("C001", createdOrder.CustomerId);
+            Assert.Equal(newOrderId, createdOrder.OrderId);
         }
 
         [Fact]

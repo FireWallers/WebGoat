@@ -46,13 +46,18 @@ namespace WebGoat.Test
         {
             // Arrange
             NorthwindContext context = TestContext.CreateContext();
-            var service = new BlogResponseRepository(context); // Assuming BlogService contains the CreateBlogEntry method
-
+            var blogEntryRepo = new BlogEntryRepository(context);
+            string username = "testuser";
             string author = "Test Author";
             string contents = "This is a test content.";
-            int entryId = 21;
+
+            BlogEntry result = blogEntryRepo.CreateBlogEntry(author, contents, username);
+
+            int entryId = result.Id;
             DateTime now = DateTime.Now;
             BlogResponse response = BlogResponseFactory.Create(author, contents, entryId, now);
+            var service = new BlogResponseRepository(context);
+
             // Act
             service.CreateBlogResponse(response);
 

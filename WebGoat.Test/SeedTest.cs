@@ -23,11 +23,18 @@ namespace WebGoat.Test
             };
             _context.Customers.AddRange(customers);
 
+            var suppliers = new List<Supplier>
+            {
+                SupplierFactory.Create(1, "Supplier One", "Contact One"),
+                SupplierFactory.Create(2, "Supplier Two", "Contact Two")
+            };
+            _context.Suppliers.AddRange(suppliers);
+
             var products = new List<Product>
             {
-                ProductFactory.Create(1, "Chai", 1, "2", 18.00, false),
-                ProductFactory.Create(2, "Chang", 1, "2", 19.00, false),
-                ProductFactory.Create(3, "Aniseed Syrup", 1,"2", 10.00, true)
+                ProductFactory.Create(1, "Chai", 1, "2", 18.00, false, 1),
+                ProductFactory.Create(2, "Chang", 1, "2", 19.00, false, 1),
+                ProductFactory.Create(3, "Aniseed Syrup", 1,"2", 10.00, true, 2)
             };
             _context.Products.AddRange(products);
 

@@ -86,15 +86,7 @@ namespace WebGoat.Test
         [Fact]
         public void Add_AddsProductSuccessfully()
         {
-            var newProduct = new Product
-            {
-                ProductId = 4,
-                ProductName = "New Product",
-                QuantityPerUnit = "2",
-                CategoryId = 1,
-                UnitPrice = 25.00,
-                Discontinued = false
-            };
+            Product newProduct = ProductFactory.Create(4, "New Product", 1, "2", 25.00, false, 1);
 
             _repository.Add(newProduct);
 
@@ -106,15 +98,7 @@ namespace WebGoat.Test
         [Fact]
         public void AddProduct_WithNegativePrice_ThrowsArgumentException()
         {
-            var invalidProduct = new Product
-            {
-                ProductId = 5,
-                ProductName = "Invalid Product",
-                QuantityPerUnit = "1",
-                CategoryId = 1,
-                UnitPrice = -10.00, // Invalid negative price
-                Discontinued = false
-            };
+            Product invalidProduct = ProductFactory.Create(5, "Invalid Product", 1, "1", -10.00, false, 1);
 
             // Assuming the repository validates product data and throws ArgumentException
             var exception = Assert.Throws<ArgumentException>(() => _repository.Add(invalidProduct));
@@ -128,15 +112,7 @@ namespace WebGoat.Test
         [InlineData("!Invalid")]          // Invalid, starts with special character
         public void ValidateProductName_EnforcesAllowedCharacters(string productName)
         {
-            var product = new Product
-            {
-                ProductId = 6,
-                ProductName = productName,
-                QuantityPerUnit = "1",
-                CategoryId = 1,
-                UnitPrice = 15.00,
-                Discontinued = false
-            };
+            Product product = ProductFactory.Create(6, productName, 1, "1", 15.00, false, 1);
 
             var exception = Assert.Throws<ArgumentException>(() => _repository.Add(product));
             // Assert.Equal("Product name contains invalid characters.", exception.Message); //TODO Create the actualt exceptions and test for the exception is the right thrown

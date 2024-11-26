@@ -5,7 +5,15 @@ namespace WebGoat.Test.Factories
 {
     public static class ProductFactory
     {
-        public static Product Create(int id, string name, int categoryId, string quantityPerUnit, double unitPrice, bool discontinued = false)
+        public static Product Create(
+            int id, 
+            string name, 
+            int categoryId, 
+            string quantityPerUnit, 
+            double unitPrice, 
+            bool discontinued,
+            int supplierId
+            )
         {
             return new Product
             {
@@ -14,7 +22,8 @@ namespace WebGoat.Test.Factories
                 CategoryId = categoryId,
                 QuantityPerUnit = quantityPerUnit,
                 UnitPrice = unitPrice,
-                Discontinued = discontinued
+                Discontinued = discontinued,
+                SupplierId = supplierId
             };
         }
     }
