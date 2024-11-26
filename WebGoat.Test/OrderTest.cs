@@ -116,5 +116,42 @@ namespace WebGoat.Test
         }
 
         //SECURITY TEST START FROM HERE!!!
+
+        [Fact]
+        public void CreateOrder_ShouldThrowArgumentException_OnSqlInjectionAttempt()
+        {
+            // Arrange
+            var maliciousOrder = new Order
+            {
+                OrderId = 0, // Let the repository handle ID assignment
+                CustomerId = "C001",
+                EmployeeId = 1,
+                OrderDate = DateTime.Today,
+                RequiredDate = DateTime.Today.AddDays(7),
+                ShipVia = 1,
+                Freight = 10.5m,
+                ShipName = "Test Ship",
+                ShipAddress = "123 Test Address",
+                ShipCity = "Test City",
+                ShipRegion = "Test Region",
+                ShipPostalCode = "12345",
+                ShipCountry = "Test Country'; DROP TABLE Orders; --", // SQL Injection attempt
+                OrderDetails = new List<OrderDetail>
+                {
+                    new OrderDetail
+                    {
+                        ProductId = 1,
+                        UnitPrice = 18.00,
+                        Quantity = 2,
+                        Discount = 0.0f
+                    }
+                }
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _orderRepository.CreateOrder(maliciousOrder));
+            // Assert.Equal("Invalid input detected. Potential SQL injection attempt.", exception.Message);
+        }
+
     }
 }
