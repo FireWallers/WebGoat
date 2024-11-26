@@ -3,16 +3,19 @@ using WebGoatCore.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using WebGoat.NET.Data.Interfaces;
+using WebGoatCore.DomainModels;
+using WebGoat.NET.DomainPrimitives.Blog;
 
 namespace WebGoatCore.Controllers
 {
     [Route("[controller]/[action]")]
     public class BlogController : Controller
     {
-        private readonly BlogEntryRepository _blogEntryRepository;
-        private readonly BlogResponseRepository _blogResponseRepository;
+        private readonly IBlogEntryRepository _blogEntryRepository;
+        private readonly IBlogResponseRepository _blogResponseRepository;
 
-        public BlogController(BlogEntryRepository blogEntryRepository, BlogResponseRepository blogResponseRepository, NorthwindContext context)
+        public BlogController(IBlogEntryRepository blogEntryRepository, IBlogResponseRepository blogResponseRepository, NorthwindContext context)
         {
             _blogEntryRepository = blogEntryRepository;
             _blogResponseRepository = blogResponseRepository;
@@ -33,12 +36,19 @@ namespace WebGoatCore.Controllers
         public IActionResult Reply(int entryId, string contents)
         {
             var userName = User?.Identity?.Name ?? "Anonymous";
+            BlogResponseDM model = new BlogResponseDM(
+                new ResponseDate(DateTime.Now),
+                new Contents(contents),
+                new Author(userName),
+                new EntryId(entryId)
+            );
+
             var response = new BlogResponse()
             {
-                Author = userName,
-                Contents = contents,
-                BlogEntryId = entryId,
-                ResponseDate = DateTime.Now
+                Author = model.Author.GetValue(),
+                Contents = model.Contents.GetValue(),
+                BlogEntryId = model.EntryId.GetValue(),
+                ResponseDate = model.ResponseDate.GetValue()
             };
             _blogResponseRepository.CreateBlogResponse(response);
 

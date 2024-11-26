@@ -1,13 +1,18 @@
-﻿using WebGoat.NET.Data.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WebGoat.NET.Data.Interfaces;
+using WebGoatCore.Data;
 using WebGoatCore.Models;
 
-namespace WebGoatCore.Data
+namespace WebGoat.NET.Data.VersionTwo
 {
-    public class BlogResponseRepository : IBlogResponseRepository
+    public class BlogResponseRepositoryV_II : IBlogResponseRepository
     {
         private readonly NorthwindContext _context;
 
-        public BlogResponseRepository(NorthwindContext context)
+        public BlogResponseRepositoryV_II(NorthwindContext context)
         {
             _context = context;
         }
