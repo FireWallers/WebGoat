@@ -16,7 +16,7 @@ namespace WebGoat.NET.DomainPrimitives.Blog
         public Contents(string value)
         {
             Validate(value);
-            _value = HtmlSanitizer.Sanitize(value);
+            _value = HtmlValidater.Validate(value);
         }
 
         public string GetValue(){

@@ -60,8 +60,7 @@ namespace WebGoat.NET.Data.VersionTwo
             {
                 try
                 {
-                    validateBlog(blog);
-                    validatedBlogs.Add(blog); 
+                    validatedBlogs.Add(validateBlog(blog));
                 }
                 catch (ArgumentException e)
                 {
@@ -81,27 +80,37 @@ namespace WebGoat.NET.Data.VersionTwo
             return blogEntries.ToList();
         }
 
-        private void validateBlog(BlogEntry blogEntry){
+        private BlogEntry validateBlog(BlogEntry blogEntry){
             new BlogEntryDM(
                 new Title(blogEntry.Title),
                 new PostedDate(blogEntry.PostedDate),
                 new Contents(blogEntry.Contents),
                 new Author(blogEntry.Author)
-            ); 
+            );
+            blogEntry.Responses = validateResponse(blogEntry.Responses);
+            return blogEntry;
+        }
 
-            IList<BlogResponse> validatedResponses = new List<BlogResponse>();
-            foreach (BlogResponse response in blogEntry.Responses)
+        private List<BlogResponse> validateResponse(IList<BlogResponse> Responses){
+            List<BlogResponse> validatedResponses = new List<BlogResponse>();
+            foreach (BlogResponse response in Responses)
             {
-                BlogResponseDM blogDM = new BlogResponseDM(
-                    new ResponseDate(response.ResponseDate),
-                    new Contents(response.Contents),
-                    new Author(response.Author),
-                    new EntryId(response.BlogEntryId)
-                );
-                BlogResponse validatedResponse = new BlogResponse();
-                validatedResponses.Add(validatedResponse);
+                try
+                {
+                    BlogResponseDM blogDM = new BlogResponseDM(
+                        new ResponseDate(response.ResponseDate),
+                        new Contents(response.Contents),
+                        new Author(response.Author),
+                        new EntryId(response.BlogEntryId)
+                    );
+                    validatedResponses.Add(response);
+                }
+                catch (System.Exception)
+                {
+                    //Log the errors here
+                }
             }
-            blogEntry.Responses = 
+            return validatedResponses;
         }
     }
 }

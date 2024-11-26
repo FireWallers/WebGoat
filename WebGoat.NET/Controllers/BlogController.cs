@@ -6,6 +6,8 @@ using System;
 using WebGoat.NET.Data.Interfaces;
 using WebGoatCore.DomainModels;
 using WebGoat.NET.DomainPrimitives.Blog;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using WebGoatCore.ViewModels;
 
 namespace WebGoatCore.Controllers
 {
@@ -35,24 +37,32 @@ namespace WebGoatCore.Controllers
         [HttpPost("{entryId}")]
         public IActionResult Reply(int entryId, string contents)
         {
-            var userName = User?.Identity?.Name ?? "Anonymous";
-            BlogResponseDM model = new BlogResponseDM(
-                new ResponseDate(DateTime.Now),
-                new Contents(contents),
-                new Author(userName),
-                new EntryId(entryId)
-            );
-
-            var response = new BlogResponse()
+            try
             {
-                Author = model.Author.GetValue(),
-                Contents = model.Contents.GetValue(),
-                BlogEntryId = model.EntryId.GetValue(),
-                ResponseDate = model.ResponseDate.GetValue()
-            };
-            _blogResponseRepository.CreateBlogResponse(response);
+                var userName = User?.Identity?.Name ?? "Anonymous";
+                BlogResponseDM model = new BlogResponseDM(
+                    new ResponseDate(DateTime.Now),
+                    new Contents(contents),
+                    new Author(userName),
+                    new EntryId(entryId)
+                );
 
-            return RedirectToAction("Index");
+                var response = new BlogResponse()
+                {
+                    Author = model.Author.GetValue(),
+                    Contents = model.Contents.GetValue(),
+                    BlogEntryId = model.EntryId.GetValue(),
+                    ResponseDate = model.ResponseDate.GetValue()
+                };
+                _blogResponseRepository.CreateBlogResponse(response);
+
+                return RedirectToAction("Index");   
+            }
+            catch (ArgumentException argument)
+            {
+                //TODO Somehow return the message from the exception
+                return View(_blogEntryRepository.GetBlogEntry(entryId));
+            }
         }
 
         [HttpGet]
@@ -63,8 +73,15 @@ namespace WebGoatCore.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create(string title, string contents)
         {
-            var blogEntry = _blogEntryRepository.CreateBlogEntry(title, contents, User!.Identity!.Name!);
-            return View(blogEntry);
+            try
+            {
+                var blogEntry = _blogEntryRepository.CreateBlogEntry(title, contents, User!.Identity!.Name!);
+                return View(blogEntry);    
+            }
+            catch (ArgumentException argument)
+            {
+                return View();
+            }
         }
 
     }
