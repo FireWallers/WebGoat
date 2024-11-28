@@ -9,8 +9,8 @@ namespace WebGoat.NET.Helpers
 {
     public static class HtmlValidater
         {
-            private static readonly string[] BlackListTags = { "script", "iframe", "object", "embed", "form" };
-            private static readonly string[] BlackListAttributes = { "onload", "onclick", "onerror", "href", "src" };
+            private static readonly string[] DenyListTags = { "script", "iframe", "object", "embed", "form" };
+            private static readonly string[] DenyListAttributes = { "onload", "onclick", "onerror", "href", "src" };
 
             public static string Validate(string input)
             {
@@ -18,7 +18,7 @@ namespace WebGoat.NET.Helpers
                     return string.Empty;
 
                 // Remove blacklisted tags
-                foreach (var tag in BlackListTags)
+                foreach (var tag in DenyListTags)
                 {
                     var tagRegex = new Regex($"<\\/?\\s*{tag}\\s*[^>]*>", RegexOptions.IgnoreCase);
                     if(tagRegex.IsMatch(input)){
@@ -28,7 +28,7 @@ namespace WebGoat.NET.Helpers
                 }
 
                 // Remove blacklisted attributes
-                foreach (var attr in BlackListAttributes)
+                foreach (var attr in DenyListAttributes)
                 {
                     var attrRegex = new Regex($"{attr}\\s*=\\s*['\"].*?['\"]", RegexOptions.IgnoreCase);
                     if(attrRegex.IsMatch(input)){
