@@ -1,4 +1,3 @@
-using WebGoatCore.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -16,6 +15,9 @@ using WebGoatCore.Controllers;
 using WebGoatCore.Exceptions;
 using WebGoat.NET.Seeders;
 using Microsoft.Extensions.Logging;
+using WebGoat.NET.Data.Interfaces;
+using WebGoat.NET.Data.VersionTwo;
+using WebGoatCore.Data;
 
 namespace WebGoatCore
 {
@@ -118,8 +120,8 @@ namespace WebGoatCore
 
             services.AddScoped<CustomerRepository>();
             services.AddScoped<ProductRepository>();
-            services.AddScoped<BlogEntryRepository>();
-            services.AddScoped<BlogResponseRepository>();
+            services.AddScoped<IBlogEntryRepository, BlogEntryRepositoryV_II>();
+            services.AddScoped<IBlogResponseRepository, BlogResponseRepositoryV_II>();
             services.AddScoped<ShipperRepository>();
             services.AddScoped<SupplierRepository>();
             services.AddScoped<OrderRepository>();
