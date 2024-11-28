@@ -3,10 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using WebGoat.NET.Data.Interfaces;
 
 namespace WebGoatCore.Data
 {
-    public class BlogEntryRepository
+    public class BlogEntryRepository : IBlogEntryRepository
     {
         private readonly NorthwindContext _context;
 
