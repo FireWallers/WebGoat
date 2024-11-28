@@ -40,19 +40,13 @@ namespace WebGoatCore.Controllers
             try
             {
                 var userName = User?.Identity?.Name ?? "Anonymous";
-                BlogResponseDM model = new BlogResponseDM(
-                    new ResponseDate(DateTime.Now),
-                    new Contents(contents),
-                    new Author(userName),
-                    new EntryId(entryId)
-                );
 
                 var response = new BlogResponse()
                 {
-                    Author = model.Author.GetValue(),
-                    Contents = model.Contents.GetValue(),
-                    BlogEntryId = model.EntryId.GetValue(),
-                    ResponseDate = model.ResponseDate.GetValue()
+                    Author = userName,
+                    Contents = contents,
+                    BlogEntryId = entryId,
+                    ResponseDate = DateTime.Now
                 };
                 _blogResponseRepository.CreateBlogResponse(response);
 

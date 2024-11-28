@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebGoatCore.Models;
 using WebGoat.Test.Factories;
+using WebGoat.NET.Data.VersionTwo;
 
 namespace WebGoat.Test
 {
@@ -78,50 +79,76 @@ namespace WebGoat.Test
         {
             // Arrange
             NorthwindContext context = TestContext.CreateContext();
-            var service = new BlogEntryRepository(context);
+            var service = new BlogEntryRepositoryV_II(context);
 
             string maliciousContent = "<script>alert('XSS')</script>";
-            // string sanitizedContent = "alert('XSS')"; // Adjust based on your sanitization logic
             string author = "Test Author";
             string title = "A Title";
             DateTime now = DateTime.Now;
 
+            BlogEntry createdEntry = null;
 
             // Act
-            var result = service.CreateBlogEntry(title, maliciousContent, author);
+            try
+            {
+                service.CreateBlogEntry(title, maliciousContent, author);
+            }
+            catch (ArgumentException exception)
+            {
+                // Check if an entry was created despite the exception
+                createdEntry = context.BlogEntries.FirstOrDefault(e => e.Title == title && e.Author == author);
+            }
 
             // Assert
-            var entryInDb = context.BlogEntries
-                .FirstOrDefault(e => e.Id == result.Id);
-            Assert.NotNull(entryInDb);
-            Assert.NotEqual(maliciousContent, entryInDb.Contents); // Ensure raw malicious content is not saved
-            // Assert.Equal(sanitizedContent, entryInDb.Contents);   // Ensure content is sanitized correctly
+            if (createdEntry != null)
+            {
+                Assert.NotEqual(maliciousContent, createdEntry.Contents); // Ensure raw malicious content is not saved
+            }
+            else
+            {
+                Assert.Null(context.BlogEntries.FirstOrDefault(e => e.Title == title && e.Author == author));
+            }
         }
+
 
         [Fact]
         public void Test_that_can_not_insert_code_into_reply()
         {
             // Arrange
             NorthwindContext context = TestContext.CreateContext();
-            var service = new BlogResponseRepository(context);
+            var service = new BlogResponseRepositoryV_II(context);
 
             string maliciousContent = "<script>alert('XSS')</script>";
             // string sanitizedContent = "alert('XSS')"; // Adjust based on your sanitization logic
             string author = "Test Author";
-            int entryId = 21;
             DateTime now = DateTime.Now;
+            BlogEntry entry = BlogEntryFactory.Create(author, "Content", "Test User");
+            var createdEntry = context.BlogEntries.Add(entry).Entity;
+            context.SaveChangesAsync();
+            BlogResponse response = BlogResponseFactory.Create(author, maliciousContent, createdEntry.Id, now);
 
-            BlogResponse response = BlogResponseFactory.Create(author, maliciousContent, entryId, now);
+            BlogResponse createdResponse = null;
 
             // Act
-            service.CreateBlogResponse(response);
+            try
+            {
+                service.CreateBlogResponse(response);
+            }
+            catch (ArgumentException exception)
+            {
+                // Check if an entry was created despite the exception
+                createdResponse = context.BlogResponses.FirstOrDefault(e => e.Contents == maliciousContent && e.Author == author);
+            }
 
             // Assert
-            var entryInDb = context.BlogResponses
-                .FirstOrDefault(e => e.BlogEntryId == entryId);
-            Assert.NotNull(entryInDb);
-            Assert.NotEqual(maliciousContent, entryInDb.Contents); // Ensure raw malicious content is not saved
-            // Assert.Equal(sanitizedContent, entryInDb.Contents);   // Ensure content is sanitized correctly
+            if (createdResponse != null)
+            {
+                Assert.NotEqual(maliciousContent, createdResponse.Contents); // Ensure raw malicious content is not saved
+            }
+            else
+            {
+                Assert.Null(context.BlogResponses.FirstOrDefault(e => e.Contents == maliciousContent && e.Author == author));
+            }
         }
         //End Security Test
     }
