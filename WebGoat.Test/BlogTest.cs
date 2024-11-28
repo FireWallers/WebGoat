@@ -9,6 +9,7 @@ using System.Security.Claims;
 using WebGoatCore.Models;
 using WebGoat.Test.Factories;
 using WebGoat.NET.Data.VersionTwo;
+using WebGoat.NET.Data.Interfaces;
 
 namespace WebGoat.Test
 {
@@ -74,12 +75,14 @@ namespace WebGoat.Test
 
         //SECURITY TEST START FROM HERE!!!
 
-        [Fact]
-        public void Test_that_can_not_insert_code_into_blog()
+        [Theory]
+        // [InlineData(typeof(BlogEntryRepository))]
+        [InlineData(typeof(BlogEntryRepositoryV_II))]
+        public void Test_that_can_not_insert_code_into_blog(Type repositoryType)
         {
             // Arrange
             NorthwindContext context = TestContext.CreateContext();
-            var service = new BlogEntryRepositoryV_II(context);
+            var service = (IBlogEntryRepository)Activator.CreateInstance(repositoryType, context);
 
             string maliciousContent = "<script>alert('XSS')</script>";
             string author = "Test Author";
@@ -111,12 +114,14 @@ namespace WebGoat.Test
         }
 
 
-        [Fact]
-        public void Test_that_can_not_insert_code_into_reply()
+        [Theory]
+        // [InlineData(typeof(BlogResponseRepository))]
+        [InlineData(typeof(BlogResponseRepositoryV_II))]
+        public void Test_that_can_not_insert_code_into_reply(Type repositoryType)
         {
             // Arrange
             NorthwindContext context = TestContext.CreateContext();
-            var service = new BlogResponseRepositoryV_II(context);
+            var service = (IBlogResponseRepository)Activator.CreateInstance(repositoryType, context);
 
             string maliciousContent = "<script>alert('XSS')</script>";
             // string sanitizedContent = "alert('XSS')"; // Adjust based on your sanitization logic

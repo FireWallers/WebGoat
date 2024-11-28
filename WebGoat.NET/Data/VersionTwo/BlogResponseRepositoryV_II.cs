@@ -27,7 +27,7 @@ namespace WebGoat.NET.Data.VersionTwo
                 new Author(response.Author),
                 new EntryId(response.BlogEntryId)
             );
-            //TODO: should put this in a try/catch
+            
             _context.BlogResponses.Add(response);
             _context.SaveChanges();
         }

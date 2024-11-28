@@ -15,19 +15,14 @@ namespace WebGoat.NET.DomainPrimitives.Blog
 
         public Contents(string value)
         {
-            Validate(value);
-            _value = HtmlValidater.Validate(value);
+            _value = Validate(value);
         }
 
         public string GetValue(){
             return _value;
         }
 
-        private void Validate(string value){
-            if(value == null){
-                throw new ArgumentNullException("Content must be filled");
-            }
-
+        private string Validate(string value){
             if(value.Length > 2400){
                 throw new ArgumentException("Content is too long");
             }
@@ -36,12 +31,7 @@ namespace WebGoat.NET.DomainPrimitives.Blog
                 throw new ArgumentException("Content is too Short");
             }
 
-            // string pattern = @"<(?:script|svg|iframe|object|embed|link|style|base|meta|form|img|audio|video|textarea)\b[^>]*>(.*?)</\1>|<(?:script|svg|iframe|object|embed|link|style|base|meta|form|img|audio|video|textarea)\b[^>]*\/?>";
-            // Regex regex = new Regex(pattern);
-
-            // if(!regex.IsMatch(value)){
-            //     throw new ArgumentException("Content does not allow potentially malicious tags");
-            // }
+            return HtmlValidater.Validate(value);
         }
     }
 }

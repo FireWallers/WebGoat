@@ -7,14 +7,18 @@ namespace WebGoatCore.DomainModels
     public class BlogResponseDM
     {
         public int Id { get; set; }
-        public EntryId EntryId { get; set; }
-        public ResponseDate ResponseDate { get; set; }
-        public Author Author { get; set; }
-        public Contents Contents { get; set; }
+        public EntryId EntryId { get; }
+        public ResponseDate ResponseDate { get; }
+        public Author Author { get; }
+        public Contents Contents { get; }
 
-        public virtual BlogEntryDM BlogEntry { get; set; }
+        public virtual BlogEntryDM BlogEntry { get; }
 
-        public BlogResponseDM(ResponseDate postedDate, Contents contents, Author author, EntryId entryId)
+        public BlogResponseDM(
+            ResponseDate postedDate, 
+            Contents contents, 
+            Author author, 
+            EntryId entryId)
         {
             ResponseDate = postedDate;
             Contents = contents;
